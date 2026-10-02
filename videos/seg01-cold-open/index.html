@@ -1,0 +1,715 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <script src="assets/vendor/gsap.min.js"></script>
+    <style>
+      @font-face {
+        font-family: "Space Grotesk";
+        font-weight: 400;
+        src: url("assets/fonts/space-grotesk-latin-400-normal.woff2") format("woff2");
+      }
+      @font-face {
+        font-family: "Space Grotesk";
+        font-weight: 500;
+        src: url("assets/fonts/space-grotesk-latin-500-normal.woff2") format("woff2");
+      }
+      @font-face {
+        font-family: "Space Grotesk";
+        font-weight: 700;
+        src: url("assets/fonts/space-grotesk-latin-700-normal.woff2") format("woff2");
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background: #070b12;
+      }
+      #root {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background: #070b12;
+        font-family: "Space Grotesk", Inter, ui-sans-serif, system-ui, sans-serif;
+      }
+      .layer {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 1920px;
+        height: 1080px;
+      }
+      .cam {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 1920px;
+        height: 1080px;
+      }
+      svg.full {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 1920px;
+        height: 1080px;
+        overflow: visible;
+      }
+      .h {
+        opacity: 0;
+      }
+
+      /* ---- mid plane ---- */
+      #mid {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 1920px;
+        height: 1080px;
+      }
+      #beam {
+        position: absolute;
+        left: 580px;
+        top: 180px;
+        width: 760px;
+        height: 760px;
+        opacity: 0;
+        background: conic-gradient(
+          from 0deg at 50% 50%,
+          rgba(34, 211, 238, 0) 0deg,
+          rgba(34, 211, 238, 0) 332deg,
+          rgba(34, 211, 238, 0.05) 340deg,
+          rgba(34, 211, 238, 0.24) 357deg,
+          rgba(34, 211, 238, 0.7) 359.5deg,
+          rgba(34, 211, 238, 0) 360deg
+        );
+        -webkit-mask-image: radial-gradient(circle at 50% 50%, #000 0, #000 376px, transparent 380px);
+        mask-image: radial-gradient(circle at 50% 50%, #000 0, #000 376px, transparent 380px);
+      }
+      .slot {
+        position: absolute;
+        width: 88px;
+        height: 88px;
+        opacity: 0;
+      }
+      .bob {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 88px;
+        height: 88px;
+      }
+      .icon {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 88px;
+        height: 88px;
+        overflow: visible;
+        fill: none;
+        stroke: #e8eef5;
+        stroke-width: 3;
+        stroke-linejoin: round;
+        stroke-linecap: butt;
+      }
+      .badgeWrap {
+        position: absolute;
+        left: 54px;
+        top: -14px;
+        width: 36px;
+        height: 36px;
+      }
+      .badge {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 36px;
+        height: 36px;
+        opacity: 0;
+      }
+      .badge svg {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 36px;
+        height: 36px;
+        overflow: visible;
+      }
+
+      /* ---- near plane (HUD) ---- */
+      .mono {
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+      }
+      #camLabel {
+        position: absolute;
+        left: 104px;
+        top: 84px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        font-size: 18px;
+        line-height: 24px;
+        color: #8b95a7;
+        letter-spacing: 0.04em;
+        opacity: 0;
+      }
+      #camDot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: #22c55e;
+      }
+      #frmLabel {
+        position: absolute;
+        right: 104px;
+        top: 972px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        font-size: 18px;
+        line-height: 24px;
+        color: #8b95a7;
+        letter-spacing: 0.04em;
+        white-space: pre;
+        opacity: 0;
+      }
+
+      /* ---- text plane ---- */
+      .t {
+        position: absolute;
+        left: 0;
+        width: 1920px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        white-space: pre;
+      }
+      #line {
+        top: 92px;
+        height: 56px;
+        font-size: 40px;
+        font-weight: 500;
+        color: #8b95a7;
+      }
+      #eyebrow {
+        top: 572px;
+        height: 36px;
+        font-size: 22px;
+        font-weight: 400;
+        color: #22d3ee;
+        letter-spacing: 0.3em;
+        padding-left: 0.3em;
+      }
+      #title {
+        top: 614px;
+        height: 112px;
+        font-size: 96px;
+        font-weight: 700;
+        color: #e8eef5;
+        letter-spacing: -0.01em;
+        gap: 0.28em;
+      }
+      #title .w {
+        display: block;
+        opacity: 0;
+      }
+      #subtitle {
+        top: 758px;
+        height: 44px;
+        font-size: 34px;
+        font-weight: 400;
+        color: #b6c0ce;
+        opacity: 0;
+      }
+      #name {
+        top: 834px;
+        height: 32px;
+        font-size: 26px;
+        color: #8b95a7;
+        letter-spacing: 0.12em;
+        padding-left: 0.12em;
+        opacity: 0;
+      }
+      .ch {
+        position: relative;
+        display: block;
+        opacity: 0;
+      }
+      .caret {
+        position: absolute;
+        left: 100%;
+        top: 8%;
+        width: 3px;
+        height: 84%;
+        background: #8b95a7;
+        opacity: 0;
+      }
+
+      /* ---- wipe ---- */
+      #wipePanel {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 1920px;
+        height: 1080px;
+        background: #070b12;
+        clip-path: inset(0px 1920px 0px 0px);
+      }
+      #wipeLine {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 2px;
+        height: 1080px;
+        background: #22d3ee;
+        opacity: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-duration="60"
+      data-width="1920"
+      data-height="1080"
+    >
+      <!-- FAR plane: range rings, 0.2x camera drift -->
+      <div id="farLayer" class="layer">
+        <div id="farCamA" class="cam">
+          <div id="farCamB" class="cam">
+            <svg id="far" class="full" viewBox="0 0 1920 1080" xmlns="http://www.w3.org/2000/svg">
+              <g id="rings" style="opacity: 0" fill="none" stroke="#22D3EE" stroke-opacity="0.06" stroke-width="1">
+                <circle cx="960" cy="560" r="250" />
+                <circle cx="960" cy="560" r="430" />
+                <circle cx="960" cy="560" r="640" />
+                <circle cx="960" cy="560" r="880" />
+              </g>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- MID plane: eye, orbit, icons, checks, beam -->
+      <div id="midLayer" class="layer">
+        <div id="camA" class="cam">
+          <div id="camB" class="cam">
+            <div id="mid">
+              <svg id="eye" class="full" viewBox="0 0 1920 1080" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <radialGradient id="glowGrad" cx="50%" cy="50%" r="50%">
+                    <stop offset="0%" stop-color="#22D3EE" stop-opacity="0.85" />
+                    <stop offset="40%" stop-color="#22D3EE" stop-opacity="0.3" />
+                    <stop offset="100%" stop-color="#22D3EE" stop-opacity="0" />
+                  </radialGradient>
+                  <linearGradient id="glintGrad" x1="0" y1="0" x2="1" y2="0">
+                    <stop offset="0%" stop-color="#E8EEF5" stop-opacity="0" />
+                    <stop offset="50%" stop-color="#E8EEF5" stop-opacity="0.85" />
+                    <stop offset="100%" stop-color="#E8EEF5" stop-opacity="0" />
+                  </linearGradient>
+                  <clipPath id="irisClip"><circle cx="960" cy="560" r="69" /></clipPath>
+                </defs>
+
+                <!-- eyelids -->
+                <g fill="none" stroke="#E8EEF5" stroke-width="2.5" stroke-linecap="butt" stroke-linejoin="round">
+                  <path id="lidUp" d="M700 560 C800 440 1120 440 1220 560" pathLength="1" stroke-dasharray="1 1" stroke-dashoffset="1" />
+                  <path id="lidDn" d="M700 560 C800 680 1120 680 1220 560" pathLength="1" stroke-dasharray="1 1" stroke-dashoffset="1" />
+                </g>
+
+                <!-- iris -->
+                <path id="iris" d="M960 490 A70 70 0 0 1 960 630 A70 70 0 0 1 960 490" pathLength="1" stroke-dasharray="1 1" stroke-dashoffset="1" fill="none" stroke="#22D3EE" stroke-width="2" stroke-linecap="butt" />
+
+                <!-- aperture blades -->
+                <g id="blades" style="opacity: 0" fill="none" stroke="#E8EEF5" stroke-opacity="0.8" stroke-width="2" stroke-linecap="butt">
+                  <path d="M960 498 L982.8 520.8" />
+                  <path d="M1029.3 540 L1000 560.8" />
+                  <path d="M994.6 619.2 L970.6 589" />
+                  <path d="M960 622 L937.2 599.2" />
+                  <path d="M890.7 580 L920 559.2" />
+                  <path d="M925.4 500.8 L949.4 531" />
+                </g>
+
+                <!-- glint -->
+                <g clip-path="url(#irisClip)">
+                  <rect id="glint" x="860" y="480" width="14" height="160" fill="url(#glintGrad)" style="opacity: 0" transform="rotate(25 867 560)" />
+                </g>
+
+                <!-- glow + pupil (saccade > glance > pupil) -->
+                <g id="sacc">
+                  <g id="glance">
+                    <circle id="glow" class="h" cx="960" cy="560" r="44" fill="url(#glowGrad)" />
+                    <circle id="pupil" class="h" cx="960" cy="560" r="9" fill="#22D3EE" />
+                  </g>
+                </g>
+
+                <!-- shockwave -->
+                <circle id="shock" class="h" cx="960" cy="560" r="40" fill="none" stroke="#22D3EE" stroke-width="1.5" />
+              </svg>
+
+              <div id="beam"></div>
+
+              <!-- six orbit icons -->
+              <div id="slot0" class="slot" data-ang="30">
+                <div class="bob">
+                  <svg class="icon" viewBox="0 0 88 88">
+                    <rect x="19" y="2" width="50" height="84" rx="9" />
+                    <path d="M37 11 H51" />
+                    <path d="M38 76 H50" />
+                  </svg>
+                  <div class="badgeWrap"><div class="badge"><svg viewBox="0 0 36 36"><circle cx="18" cy="18" r="18" fill="#22C55E" /><path d="M9.5 18.5 L15.5 24.5 L26.5 12.5" fill="none" stroke="#FFFFFF" stroke-width="3.2" stroke-linecap="butt" stroke-linejoin="round" pathLength="1" stroke-dasharray="1 1" stroke-dashoffset="1" /></svg></div></div>
+                </div>
+              </div>
+              <div id="slot1" class="slot" data-ang="90">
+                <div class="bob">
+                  <svg class="icon" viewBox="0 0 88 88">
+                    <rect x="14" y="6" width="60" height="76" rx="6" />
+                    <circle cx="31" cy="24" r="9" />
+                    <circle cx="57" cy="24" r="9" />
+                    <circle cx="31" cy="44" r="9" />
+                    <circle cx="57" cy="44" r="9" />
+                    <circle cx="31" cy="64" r="9" />
+                    <circle cx="57" cy="64" r="9" />
+                  </svg>
+                  <div class="badgeWrap"><div class="badge"><svg viewBox="0 0 36 36"><circle cx="18" cy="18" r="18" fill="#22C55E" /><path d="M9.5 18.5 L15.5 24.5 L26.5 12.5" fill="none" stroke="#FFFFFF" stroke-width="3.2" stroke-linecap="butt" stroke-linejoin="round" pathLength="1" stroke-dasharray="1 1" stroke-dashoffset="1" /></svg></div></div>
+                </div>
+              </div>
+              <div id="slot2" class="slot" data-ang="150">
+                <div class="bob">
+                  <svg class="icon" viewBox="0 0 88 88">
+                    <path d="M8 58 V49 Q8 43 14 42 L26 40 L35 28 Q37 25 41 25 H56 Q60 25 62 28 L69 40 L76 42 Q82 43 82 49 V58 H75" />
+                    <path d="M8 58 H15" />
+                    <path d="M31 58 H59" />
+                    <path d="M37 29 L31 40 H62 L56 29 Z" />
+                    <path d="M49 29 V40" />
+                    <circle cx="23" cy="58" r="8" />
+                    <circle cx="67" cy="58" r="8" />
+                  </svg>
+                  <div class="badgeWrap"><div class="badge"><svg viewBox="0 0 36 36"><circle cx="18" cy="18" r="18" fill="#22C55E" /><path d="M9.5 18.5 L15.5 24.5 L26.5 12.5" fill="none" stroke="#FFFFFF" stroke-width="3.2" stroke-linecap="butt" stroke-linejoin="round" pathLength="1" stroke-dasharray="1 1" stroke-dashoffset="1" /></svg></div></div>
+                </div>
+              </div>
+              <div id="slot3" class="slot" data-ang="210">
+                <div class="bob">
+                  <svg class="icon" viewBox="0 0 88 88">
+                    <rect x="34" y="3" width="20" height="8" rx="2" />
+                    <path d="M36 11 V18 Q36 22 30 28 Q26 32 26 38 V80 Q26 85 31 85 H57 Q62 85 62 80 V38 Q62 32 58 28 Q52 22 52 18 V11" />
+                    <path d="M26 50 H62" />
+                    <path d="M26 68 H62" />
+                    <path d="M38 59 H50" />
+                  </svg>
+                  <div class="badgeWrap"><div class="badge"><svg viewBox="0 0 36 36"><circle cx="18" cy="18" r="18" fill="#22C55E" /><path d="M9.5 18.5 L15.5 24.5 L26.5 12.5" fill="none" stroke="#FFFFFF" stroke-width="3.2" stroke-linecap="butt" stroke-linejoin="round" pathLength="1" stroke-dasharray="1 1" stroke-dashoffset="1" /></svg></div></div>
+                </div>
+              </div>
+              <div id="slot4" class="slot" data-ang="270">
+                <div class="bob">
+                  <svg class="icon" viewBox="0 0 88 88">
+                    <path d="M44 6 L78 24 V62 L44 82 L10 62 V24 Z" />
+                    <path d="M10 24 L44 42 L78 24" />
+                    <path d="M44 42 V82" />
+                    <path d="M27 15 L61 33" />
+                    <path d="M18 40 L34 48" />
+                  </svg>
+                  <div class="badgeWrap"><div class="badge"><svg viewBox="0 0 36 36"><circle cx="18" cy="18" r="18" fill="#22C55E" /><path d="M9.5 18.5 L15.5 24.5 L26.5 12.5" fill="none" stroke="#FFFFFF" stroke-width="3.2" stroke-linecap="butt" stroke-linejoin="round" pathLength="1" stroke-dasharray="1 1" stroke-dashoffset="1" /></svg></div></div>
+                </div>
+              </div>
+              <div id="slot5" class="slot" data-ang="330">
+                <div class="bob">
+                  <svg class="icon" viewBox="0 0 88 88">
+                    <path d="M44 24 C34 16 14 20 14 44 C14 64 28 82 38 82 C41 82 42 80 44 80 C46 80 47 82 50 82 C60 82 74 64 74 44 C74 20 54 16 44 24 Z" />
+                    <path d="M44 24 C44 16 46 10 52 6" />
+                    <path d="M50 14 C56 8 66 8 68 12 C64 18 56 18 50 14 Z" />
+                  </svg>
+                  <div class="badgeWrap"><div class="badge"><svg viewBox="0 0 36 36"><circle cx="18" cy="18" r="18" fill="#22C55E" /><path d="M9.5 18.5 L15.5 24.5 L26.5 12.5" fill="none" stroke="#FFFFFF" stroke-width="3.2" stroke-linecap="butt" stroke-linejoin="round" pathLength="1" stroke-dasharray="1 1" stroke-dashoffset="1" /></svg></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- NEAR plane: HUD chrome, locked to frame -->
+      <div id="nearLayer" class="layer">
+        <svg class="full" viewBox="0 0 1920 1080" xmlns="http://www.w3.org/2000/svg">
+          <g fill="none" stroke="#22D3EE" stroke-opacity="0.4" stroke-width="2" stroke-linecap="butt" stroke-linejoin="miter">
+            <path class="brk" d="M64 128 V64 H128" pathLength="1" stroke-dasharray="1 1" stroke-dashoffset="1" />
+            <path class="brk" d="M1792 64 H1856 V128" pathLength="1" stroke-dasharray="1 1" stroke-dashoffset="1" />
+            <path class="brk" d="M1856 952 V1016 H1792" pathLength="1" stroke-dasharray="1 1" stroke-dashoffset="1" />
+            <path class="brk" d="M128 1016 H64 V952" pathLength="1" stroke-dasharray="1 1" stroke-dashoffset="1" />
+          </g>
+        </svg>
+        <div id="camLabel" class="mono"><div id="camDot"></div><span>CAM 01 · LIVE</span></div>
+        <div id="frmLabel" class="mono">FRM 000000</div>
+      </div>
+
+      <!-- TEXT plane -->
+      <div id="textLayer" class="layer">
+        <div id="line" class="t"></div>
+        <div id="eyebrow" class="t mono"></div>
+        <div id="title" class="t"><span class="w">What</span><span class="w">Is</span><span class="w">Machine</span><span class="w">Vision?</span></div>
+        <div id="subtitle" class="t">How a factory teaches a camera to see, judge, and decide.</div>
+        <div id="name" class="t mono">Om Parmar</div>
+      </div>
+
+      <!-- WIPE -->
+      <div id="wipeLayer" class="layer">
+        <div id="wipePanel"></div>
+        <div id="wipeLine"></div>
+      </div>
+
+      <!-- GRAIN: static, 3% -->
+      <div id="grainLayer" class="layer" style="pointer-events: none">
+        <svg class="full" viewBox="0 0 1920 1080" xmlns="http://www.w3.org/2000/svg">
+          <filter id="grainF" x="0" y="0" width="100%" height="100%">
+            <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" seed="5" stitchTiles="stitch" />
+            <feColorMatrix type="saturate" values="0" />
+          </filter>
+          <rect width="1920" height="1080" filter="url(#grainF)" opacity="0.03" />
+        </svg>
+      </div>
+
+      <!-- AUDIO: six soft clicks on the checks, one whoosh under the wipe -->
+      <audio id="click0" src="assets/audio/click.wav" data-start="25" data-duration="0.14" data-track-index="10" data-volume="0.5"></audio>
+      <audio id="click1" src="assets/audio/click.wav" data-start="27" data-duration="0.14" data-track-index="11" data-volume="0.5"></audio>
+      <audio id="click2" src="assets/audio/click.wav" data-start="29" data-duration="0.14" data-track-index="12" data-volume="0.5"></audio>
+      <audio id="click3" src="assets/audio/click.wav" data-start="31" data-duration="0.14" data-track-index="13" data-volume="0.5"></audio>
+      <audio id="click4" src="assets/audio/click.wav" data-start="33" data-duration="0.14" data-track-index="14" data-volume="0.5"></audio>
+      <audio id="click5" src="assets/audio/click.wav" data-start="35" data-duration="0.14" data-track-index="15" data-volume="0.5"></audio>
+      <audio id="whoosh" src="assets/audio/whoosh.wav" data-start="59.2" data-duration="0.8" data-track-index="16" data-volume="0.45"></audio>
+    </div>
+
+    <script>
+      // ---------- seeded PRNG (the only source of randomness) ----------
+      function mulberry32(a) {
+        return function () {
+          a |= 0;
+          a = (a + 0x6d2b79f5) | 0;
+          let t = Math.imul(a ^ (a >>> 15), 1 | a);
+          t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+          return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+        };
+      }
+      const rnd = mulberry32(0x5e601);
+
+      const FPS = 60;
+      const CX = 960;
+      const CY = 560;
+      const ORBIT = 320;
+      const DUR = 60;
+      const tl = gsap.timeline({ paused: true });
+
+      // ---------- static setup (hidden / initial states) ----------
+      gsap.set("#camA, #camB, #farCamA, #farCamB, #far", { transformOrigin: "960px 560px" });
+      gsap.set("#mid", { transformOrigin: "960px 560px" });
+      gsap.set("#blades", { svgOrigin: "960 560" });
+      gsap.set("#blades", { rotation: -30 });
+      gsap.set("#glint", { x: 0 });
+
+      // ---------- char-by-char text ----------
+      function buildChars(el, text, withCaret) {
+        const chars = [];
+        for (const c of text) {
+          const s = document.createElement("span");
+          s.className = "ch";
+          s.textContent = c;
+          if (withCaret) {
+            const i = document.createElement("i");
+            i.className = "caret";
+            s.appendChild(i);
+          }
+          el.appendChild(s);
+          chars.push(s);
+        }
+        return chars;
+      }
+      function typeOn(chars, t0, step, withCaret, blinkUntil) {
+        chars.forEach((s, i) => {
+          const t = t0 + i * step;
+          tl.set(s, { opacity: 1 }, t);
+          if (withCaret) {
+            const caret = s.querySelector(".caret");
+            tl.set(caret, { opacity: 1 }, t);
+            if (i < chars.length - 1) tl.set(caret, { opacity: 0 }, t0 + (i + 1) * step);
+          }
+        });
+        if (withCaret) {
+          const last = chars[chars.length - 1].querySelector(".caret");
+          const tEnd = t0 + (chars.length - 1) * step;
+          let on = true;
+          for (let t = tEnd + 0.5; t < blinkUntil; t += 0.5) {
+            on = !on;
+            tl.set(last, { opacity: on ? 1 : 0 }, t);
+          }
+          tl.set(last, { opacity: 0 }, blinkUntil);
+        }
+      }
+
+      // ---------- CAMERA (far 0.2x, mid 1x) ----------
+      const PUSH1_WIN = 46; // window slightly longer than 44s so the push never decays
+      const push1 = 0.04 * (PUSH1_WIN / 44);
+      tl.to("#camA", { scale: 1 + push1, duration: PUSH1_WIN, ease: "none" }, 0);
+      tl.to("#farCamA", { scale: 1 + push1 * 0.2, duration: PUSH1_WIN, ease: "none" }, 0);
+      tl.to("#camB", { scale: 1.02, duration: 14, ease: "none" }, 46);
+      tl.to("#farCamB", { scale: 1.004, duration: 14, ease: "none" }, 46);
+
+      // far rings fade in from 5s
+      tl.to("#rings", { opacity: 1, duration: 3, ease: "power1.out" }, 5);
+
+      // ---------- B1: the dot ----------
+      tl.to("#pupil", { opacity: 1, duration: 0.5, ease: "power1.out" }, 0.4);
+      tl.to("#glow", { opacity: 0.6, duration: 0.5, ease: "power1.out" }, 0.4);
+      [1.3, 2.7].forEach((t) => {
+        tl.to("#pupil", { scale: 1.4, duration: 0.3, ease: "back.out(1.7)" }, t);
+        tl.to("#pupil", { scale: 1, duration: 0.3, ease: "power2.inOut" }, t + 0.3);
+        tl.to("#glow", { scale: 1.3, duration: 0.3, ease: "back.out(1.7)" }, t);
+        tl.to("#glow", { scale: 1, duration: 0.3, ease: "power2.inOut" }, t + 0.3);
+      });
+      // faint 1s glow heartbeat, whole segment (skips the pulse windows' glow scale only; it drives opacity)
+      for (let t = 0.9, hi = true; t < DUR; t += 0.5, hi = !hi) {
+        tl.to("#glow", { opacity: hi ? 0.85 : 0.45, duration: 0.5, ease: "sine.inOut" }, t);
+      }
+
+      // ---------- B2: the eye ----------
+      tl.to("#iris", { attr: { "stroke-dashoffset": 0 }, duration: 1.0, ease: "power2.inOut" }, 5.0);
+      tl.to("#lidUp", { attr: { "stroke-dashoffset": 0 }, duration: 1.2, ease: "power2.inOut" }, 6.2);
+      tl.to("#lidDn", { attr: { "stroke-dashoffset": 0 }, duration: 1.2, ease: "power2.inOut" }, 6.35);
+      tl.to("#blades", { rotation: 0, opacity: 1, duration: 0.8, ease: "power2.out" }, 7.6);
+      tl.to("#glint", { opacity: 1, duration: 0.1, ease: "none" }, 7.6);
+      tl.to("#glint", { x: 190, duration: 0.8, ease: "power1.inOut" }, 7.6);
+      tl.to("#glint", { opacity: 0, duration: 0.15, ease: "none" }, 8.25);
+
+      // ---------- persistent chrome ----------
+      tl.to(".brk", { attr: { "stroke-dashoffset": 0 }, duration: 0.7, ease: "power2.out", stagger: 0.08 }, 8.2);
+      tl.to("#camLabel", { opacity: 1, duration: 0.4, ease: "power1.out" }, 8.2);
+      tl.to("#frmLabel", { opacity: 1, duration: 0.4, ease: "power1.out" }, 8.2);
+      for (let t = 8.6, hi = false; t < DUR; t += 0.5, hi = !hi) {
+        tl.to("#camDot", { opacity: hi ? 1 : 0.3, duration: 0.5, ease: "sine.inOut" }, t);
+      }
+      // frame counter: integer frame index (Math.round(t*30)), stepped
+      const frm = document.getElementById("frmLabel");
+      for (let k = 0; k <= DUR * 30; k++) {
+        tl.set(frm, { textContent: "FRM " + String(Math.round((k / 30) * 30)).padStart(6, "0") }, k / 30);
+      }
+
+      // ---------- saccades (stepped on integer frames) ----------
+      function saccades(f0, f1) {
+        let f = f0;
+        while (f < f1) {
+          const dx = Math.round((rnd() * 2 - 1) * 4);
+          const dy = Math.round((rnd() * 2 - 1) * 4);
+          tl.set("#sacc", { x: dx, y: dy }, f / FPS);
+          f += 6 * (1 + Math.floor(rnd() * 3));
+        }
+      }
+      saccades(Math.round(8.6 * FPS), Math.round(10 * FPS));
+      tl.set("#sacc", { x: 0, y: 0 }, 10);
+
+      // ---------- B3: orbit arrivals ----------
+      const arrivals = [10.4, 12.4, 14.4, 16.4, 18.4, 20.4];
+      const slots = [];
+      for (let i = 0; i < 6; i++) {
+        const el = document.getElementById("slot" + i);
+        const ang = (parseFloat(el.dataset.ang) * Math.PI) / 180;
+        const sx = CX + ORBIT * Math.sin(ang);
+        const sy = CY - ORBIT * Math.cos(ang);
+        el.style.left = sx - 44 + "px";
+        el.style.top = sy - 44 + "px";
+        // nearest frame edge
+        const d = { l: sx, r: 1920 - sx, t: sy, b: 1080 - sy };
+        const edge = Object.keys(d).reduce((a, b) => (d[a] <= d[b] ? a : b));
+        let px = sx;
+        let py = sy;
+        if (edge === "l") px = -80;
+        if (edge === "r") px = 2000;
+        if (edge === "t") py = -80;
+        if (edge === "b") py = 1160;
+        gsap.set(el, { x: px - sx, y: py - sy });
+        slots.push({ el, ang, sx, sy, svg: el.querySelector(".icon") });
+      }
+
+      slots.forEach((s, i) => {
+        const t0 = arrivals[i];
+        tl.to(s.el, { x: 0, y: 0, duration: 0.9, ease: "back.out(1.7)" }, t0);
+        tl.to(s.el, { opacity: 1, duration: 0.15, ease: "none" }, t0);
+        // motivated glance, 10px toward the new icon
+        tl.to("#glance", { x: 10 * Math.sin(s.ang), y: -10 * Math.cos(s.ang), duration: 0.3, ease: "power2.out" }, t0 + 0.9);
+      });
+      tl.to("#glance", { x: 0, y: 0, duration: 0.3, ease: "power2.inOut" }, 22.0);
+      saccades(Math.round(22.3 * FPS), DUR * FPS);
+
+      // bobs: seeded, phase-offset, bounded at +/-3px, per icon
+      slots.forEach((s, i) => {
+        const bob = s.el.querySelector(".bob");
+        let t = arrivals[i] + 0.9 + rnd() * 1.2;
+        let sign = rnd() < 0.5 ? -1 : 1;
+        while (t < DUR) {
+          const dur = 1.4 + rnd() * 0.9;
+          const amp = 1.8 + rnd() * 1.2;
+          const d = Math.min(dur, DUR - t);
+          tl.to(bob, { y: sign * amp, duration: d, ease: "sine.inOut" }, t);
+          sign = -sign;
+          t += dur;
+        }
+      });
+
+      // ---------- B4: the scan ----------
+      tl.to("#beam", { opacity: 1, duration: 0.4, ease: "power1.out" }, 24);
+      tl.to("#beam", { rotation: 360, duration: 12, ease: "none" }, 24);
+      tl.to("#beam", { rotation: 720, duration: 24, ease: "none" }, 36);
+      tl.to("#beam", { opacity: 0.15, duration: 0.8, ease: "power1.out" }, 36);
+
+      slots.forEach((s, i) => {
+        const tc = 25 + 2 * i; // leading edge crosses slot angle (30*(t-24) = ang)
+        const badge = s.el.querySelector(".badge");
+        const tick = s.el.querySelector(".badge path");
+        gsap.set(badge, { scale: 0.6 });
+        tl.to(s.svg, { stroke: "#22D3EE", duration: 0.1, ease: "none" }, tc);
+        tl.to(s.svg, { stroke: "#E8EEF5", duration: 0.1, ease: "none" }, tc + 0.1);
+        tl.to(badge, { scale: 1, opacity: 1, duration: 0.3, ease: "back.out(1.7)" }, tc);
+        tl.to(tick, { attr: { "stroke-dashoffset": 0 }, duration: 0.25, ease: "power2.out" }, tc + 0.06);
+      });
+
+      // spectacle beat: the one exaggeration (sixth check at 35.0s)
+      tl.to(".badgeWrap", { scale: 1.25, duration: 1 / FPS, ease: "none" }, 35.0);
+      tl.to(".badgeWrap", { scale: 1, duration: 0.3, ease: "power2.out" }, 35.0 + 3 / FPS);
+      tl.set("#shock", { opacity: 0.9 }, 35.0);
+      tl.to("#shock", { attr: { r: 520 }, duration: 0.8, ease: "power2.out" }, 35.0);
+      tl.to("#shock", { opacity: 0, duration: 0.8, ease: "power1.in" }, 35.0);
+
+      // ---------- B5: the line ----------
+      const lineChars = buildChars(document.getElementById("line"), "Every one of these was checked by a camera.", true);
+      typeOn(lineChars, 36.2, 1 / 22, true, 41.2);
+      tl.to("#line", { opacity: 0, duration: 0.6, ease: "power2.in" }, 41.2);
+
+      // ---------- B6: title lockup ----------
+      tl.to("#mid", { scale: 0.52, y: -260, duration: 1.4, ease: "power3.inOut" }, 44.0);
+      tl.to("#far", { scale: 0.904, y: -52, duration: 1.4, ease: "power3.inOut" }, 44.0);
+      const eyebrowChars = buildChars(document.getElementById("eyebrow"), "EPISODE 001", false);
+      typeOn(eyebrowChars, 45.2, 0.07, false, 0);
+      gsap.set("#title .w", { y: 40 });
+      tl.to("#title .w", { y: 0, opacity: 1, duration: 0.6, ease: "power3.out", stagger: 0.08 }, 45.9);
+
+      // ---------- B7: sign-off ----------
+      gsap.set("#subtitle, #name", { y: 12 });
+      tl.to("#subtitle", { y: 0, opacity: 1, duration: 0.6, ease: "power2.out" }, 52.0);
+      tl.to("#name", { y: 0, opacity: 1, duration: 0.6, ease: "power2.out" }, 53.0);
+
+      // ---------- wipe to clean ground ----------
+      tl.set("#wipeLine", { opacity: 1 }, 59.2);
+      tl.to("#wipePanel", { clipPath: "inset(0px 0px 0px 0px)", duration: 0.8, ease: "power2.inOut" }, 59.2);
+      tl.to("#wipeLine", { x: 1920, duration: 0.8, ease: "power2.inOut" }, 59.2);
+
+      window.__timelines["main"] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>
